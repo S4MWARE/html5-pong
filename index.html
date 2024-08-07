@@ -3,10 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <title>HTML5 Pong Demo</title>
+
+    <!-- Demo site CSS, not needed for PongGame library -->
     <link rel="stylesheet" href="pong-demo.css">
+
+    <!-- Bootstrap: Latest compiled and minified CSS -->
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
-    <script src="https://code.jquery.com/jquery-2.2.0.min.js"></script>
+
+    <!-- jQuery: Latest compiled and minified JavaScript (Bootstrap needs it, not PongGame) -->
+    <script src="https://code.jquery.com/jquery-2.2.0.min.js" ></script>
+
+    <!-- Bootstrap: Latest compiled and minified JavaScript -->
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+
+    <!-- PongGame: Latest JavaScript library -->
     <script src="pong.js" type="application/javascript"></script>
 </head>
 <body>
@@ -68,13 +78,6 @@
                     <input type="radio" name="difficulty" onclick="changeDifficulty(this);" data-difficulty="hard">
                     Hard
                 </label>
-                <h3>Timer</h3>
-                <div class="input-group">
-                    <div class="input-group-addon">Minutes</div>
-                    <input type="number" id="timerMinutes" class="form-control" value="5" min="1">
-                </div>
-                <h3>Game Timer</h3>
-                <div id="timerDisplay">05:00</div>
             </div>
         </div>
         <hr />
@@ -86,15 +89,15 @@
             difficulty: PongGame.aiDifficulty.easy,
             names: {
                 Player1: 'PongPlayer'
-            },
-            timer: document.getElementById('timerMinutes').value * 60 // convert minutes to seconds
+            }
         });
 
         /**
-         * applies a theme to the running pong game & redraws the canvas to make the change visible
+         * applies a theme to the running pong game & redraws the canvas to make the change visable
          * @param themeName
          */
         function applyTheme(themeName) {
+
             // collection of all click-able themes
             var allThemes = {
                 standard: {
