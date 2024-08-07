@@ -30,9 +30,7 @@
         <div class="row">
             <div class="col-md-8">
                 <div id="canvasWrapper">
-                    <div>
-                        <canvas id="gameCanvas" tabindex="1"></canvas>
-                    </div>
+                    <canvas id="gameCanvas" tabindex="1"></canvas>
                 </div>
             </div>
             <div class="col-md-4" id="optionWrapper">
@@ -86,8 +84,79 @@
         </div>
         <hr />
     </div>
-    <script src="pong.js">
+
+    <script>
+        window.onload = function() {
+            var pongGame = new Pong('gameCanvas');
+            pongGame.start();
+        };
+
+        function toggleMultiplayer(checkbox) {
+            pongGame.setConfiguration({ isMultiplayer: checkbox.checked });
+        }
+
+        function toggleTimed(checkbox) {
+            pongGame.setConfiguration({ isTimedMode: checkbox.checked, timeDuration: 120 });
+        }
+
+        function applyTheme(theme) {
+            switch(theme) {
+                case 'standard':
+                    pongGame.setConfiguration({
+                        colors: {
+                            background: '#000',
+                            bat: '#FFF',
+                            ball: '#FFF',
+                            scores: '#FFF'
+                        }
+                    });
+                    break;
+                case 'classic':
+                    pongGame.setConfiguration({
+                        colors: {
+                            background: '#000',
+                            bat: '#FFF',
+                            ball: '#FFF',
+                            scores: '#FFF'
+                        }
+                    });
+                    break;
+                case 'lego':
+                    pongGame.setConfiguration({
+                        colors: {
+                            background: '#FFF',
+                            bat: '#000',
+                            ball: '#000',
+                            scores: '#000'
+                        }
+                    });
+                    break;
+                case 'blackWhite':
+                    pongGame.setConfiguration({
+                        colors: {
+                            background: '#FFF',
+                            bat: '#000',
+                            ball: '#000',
+                            scores: '#000'
+                        }
+                    });
+                    break;
+            }
+        }
+
+        function changeDifficulty(radio) {
+            switch(radio.getAttribute('data-difficulty')) {
+                case 'easy':
+                    pongGame.setConfiguration({ difficulty: 0.1 });
+                    break;
+                case 'normal':
+                    pongGame.setConfiguration({ difficulty: 0.2 });
+                    break;
+                case 'hard':
+                    pongGame.setConfiguration({ difficulty: 0.3 });
+                    break;
+            }
+        }
     </script>
-    
 </body>
 </html>
