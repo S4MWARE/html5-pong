@@ -20,9 +20,11 @@ var PongGame = function(gameCanvasNodeId){
         isMultiplayer: false,
         difficulty: PongGame.aiDifficulty.normal,
         finalScore: 5,
+        isTimedMode: false, // New setting for timed mode
+        timeDuration: 120, // Time duration in seconds
         names: {
-            Player1: 'Player1',  
-            Player2: 'Player2'  
+            Player1: 'Player1',
+            Player2: 'Player2'
         },
         colors: {
             background: 'black',
@@ -92,6 +94,9 @@ var PongGame = function(gameCanvasNodeId){
         Player2Down: false
     };
 
+    var remainingTime;
+    var timerInterval;
+
     /**
      * initializes the game and starts the game loop
      */
@@ -115,6 +120,11 @@ var PongGame = function(gameCanvasNodeId){
         // create the game objects & give the ball a random velocity and direction
         resetGameObjects();
 
+        // start timer if timed mode is enabled
+        if (self.config.isTimedMode) {
+            startTimer(self.config.timeDuration);
+        }
+
         // game is started if screen is clicked
         drawCenteredText(
             'HTML5 Pong',
@@ -123,409 +133,98 @@ var PongGame = function(gameCanvasNodeId){
     };
 
     /**
-     * method pauses the game engine
+     * Pause game
      */
-    this.pause = function(){
-        gameStopped = true;
-        drawCenteredText(
-            'Game Paused',
-            'Click here to continue the game.'
-        );
+    this.pause = function() {
+        if (!gameStopped) gameStopped = true;
     };
 
     /**
-     * resumes / restarts the game if paused or game has been ended
+     * Resume game
      */
-    this.resume = function (){
+    this.resume = function() {
         if (gameStopped) {
             gameStopped = false;
-            engine();
+            drawGame();
+            runGame();
         }
     };
 
     /**
-     * overwrites default config values with the given config object's values
-     * @param configObject
+     * Sets a custom configuration for the game
+     * @param config
      */
-    this.setConfiguration = function(configObject) {
-        self.config = Object.deepExtend(self.config, configObject);
+    this.setConfiguration = function(config) {
 
-        // reset difficulty to check if the set difficulty is ok (& from our enum)
-        self.setDifficulty(self.config.difficulty);
-    };
+        if (!config) return;
 
-    /**
-     * switches gamemode between single and multiplayer
-     * @param multiplayer
-     */
-    this.setMultiplayer = function(multiplayer) {
-        self.config.isMultiplayer = multiplayer;
-    };
+        // apply custom settings to the game
+        if (config.isMultiplayer !== undefined) self.config.isMultiplayer = config.isMultiplayer;
+        if (config.difficulty !== undefined) self.config.difficulty = config.difficulty;
+        if (config.finalScore !== undefined) self.config.finalScore = config.finalScore;
+        if (config.isTimedMode !== undefined) self.config.isTimedMode = config.isTimedMode;
+        if (config.timeDuration !== undefined) self.config.timeDuration = config.timeDuration;
 
-    /**
-     * sets difficulty for singleplayer game. if value not in aiDifficulty enum, difficulty is set to normal.
-     * @param difficulty
-     */
-    this.setDifficulty = function(difficulty) {
-
-        // set default difficulty if given difficulty is not in enum
-        if (Array.arrayValues(PongGame.aiDifficulty).indexOf(difficulty) === -1) {
-            difficulty = PongGame.aiDifficulty.normal;
-        }
-        self.config.difficulty = difficulty;
-    };
-
-    /**
-     * game engine, calculates positions of game objects and players scores
-     */
-    var engine = function(){
-
-        // we are not executing this if the game is stopped
-        if (gameStopped) return;
-
-        // make raw keyboard inputs better handel'ble
-        updateKeyboardIO();
-
-        // singleplayer ai
-        var batSpeedPlayer2 = gameSpeed;
-        if (!self.config.isMultiplayer) {
-            if (Ball.y < Player2Bat.y) self.keyboardIO.Player2Up = true;
-            if (Ball.y > Player2Bat.y) self.keyboardIO.Player2Down = true;
-            batSpeedPlayer2 = gameSpeed * self.config.difficulty;
+        if (config.names) {
+            if (config.names.Player1) self.config.names.Player1 = config.names.Player1;
+            if (config.names.Player2) self.config.names.Player2 = config.names.Player2;
         }
 
-        // move the players bats
-        if (self.keyboardIO.Player1Up && canBatBeMovedOnYAxis(Player1Bat, (gameSpeed * 2) * -1)) {
-            Player1Bat.moveObject(new Vector(0, (gameSpeed * 2) * -1));
-        }
-        if (self.keyboardIO.Player1Down && canBatBeMovedOnYAxis(Player1Bat, (gameSpeed * 2))) {
-            Player1Bat.moveObject(new Vector(0, (gameSpeed * 2)));
-        }
-        if (self.keyboardIO.Player2Up && canBatBeMovedOnYAxis(Player2Bat, (batSpeedPlayer2 * 2) * -1)) {
-            Player2Bat.moveObject(new Vector(0, (batSpeedPlayer2 * 2) * -1));
-        }
-        if (self.keyboardIO.Player2Down && canBatBeMovedOnYAxis(Player2Bat, (batSpeedPlayer2 * 2))) {
-            Player2Bat.moveObject(new Vector(0, (batSpeedPlayer2 * 2)));
+        if (config.colors) {
+            if (config.colors.background) self.config.colors.background = config.colors.background;
+            if (config.colors.bat) self.config.colors.bat = config.colors.bat;
+            if (config.colors.ball) self.config.colors.ball = config.colors.ball;
+            if (config.colors.scores) self.config.colors.scores = config.colors.scores;
         }
 
-        // check if ball colides with player1's bat
-        if (checkBallCollision(Player1Bat)) {
-
-            // we need to add a velocity limit to avoid collision detection from bugging out
-            var VelocityX = (BallVelocity.x - (gameSpeed * gameBounceSpeedRatio));
-            if (Math.abs(VelocityX) > ballRadius) {
-                VelocityX = ballRadius * -1;
+        if (config.controls) {
+            if (config.controls.Player1) {
+                if (config.controls.Player1.up) self.config.controls.Player1.up = config.controls.Player1.up;
+                if (config.controls.Player1.down) self.config.controls.Player1.down = config.controls.Player1.down;
             }
-
-            // bounce the ball from the bat & speed the ball up
-            BallVelocity = new Vector(
-                VelocityX * -1,
-                (Player1Bat.y - Ball.y) * gameBounceSmoothness * -1
-            );
-        }
-
-        // check if ball colides with player2's bat
-        if (checkBallCollision(Player2Bat)) {
-
-            // we need to add a velocity limit to avoid collision detection from bugging out
-            var VelocityX = (BallVelocity.x + (gameSpeed * gameBounceSpeedRatio));
-            if (Math.abs(VelocityX) > ballRadius) {
-                VelocityX = ballRadius;
-            }
-
-            // bounce the ball from the bat & speed the ball up
-            BallVelocity = new Vector(
-                VelocityX * -1,
-                (Player2Bat.y - Ball.y) * gameBounceSmoothness * -1
-            );
-        }
-
-        // check if ball collides with canvas's top or bottom border
-        if ((Ball.y - ballRadius) <= 0 || (Ball.y + ballRadius) >= canvasHeight) {
-
-            // bounce the ball
-            BallVelocity = new Vector(
-                BallVelocity.x,
-                BallVelocity.y * -1
-            );
-        }
-
-        // move the ball
-        Ball.moveObject(BallVelocity);
-
-        // check if someone has scored
-        if (checkScore()) {
-
-            // has one of the players won?
-            if (scorePlayer1 === self.config.finalScore || scorePlayer2 === self.config.finalScore) {
-
-                // we have to blur the canvas to make a restart possible
-                gameCanvas.blur();
-
-                // print winning screen
-                drawCenteredText(
-                    ((scorePlayer1 === self.config.finalScore) ? self.config.names.Player1 : self.config.names.Player2) + ' has won!',
-                    'Click here to restart.'
-                );
-
-                // reset the game, in case the game gets restarted
-                scorePlayer1 = scorePlayer2 = 0;
-                resetGameObjects();
-
-                // stop engine (until game is restarted)
-                return;
-            } else {
-
-                // nobody has won yet, so we are resetting the ball to the middle & are
-                // readjusting the bats
-                resetGameObjects();
+            if (config.controls.Player2) {
+                if (config.controls.Player2.up) self.config.controls.Player2.up = config.controls.Player2.up;
+                if (config.controls.Player2.down) self.config.controls.Player2.down = config.controls.Player2.down;
             }
         }
-
-        // draw all game object onto the canvas
-        drawGame();
-
-        // rerun the engnie function
-        setTimeout(function(){
-            engine();
-        }, drawRate);
     };
 
     /**
-     * if a player has scored the players score is raised and true is returned
-     * @returns {boolean}
+     * Resets the game objects to its original positions
      */
-    var checkScore = function(){
-
-        // check if player1 has scored
-        if (Ball.x >= canvasWidth) {
-            scorePlayer1++;
-            return true;
-        }
-
-        // check if player2 has scored
-        if (Ball.x <= 0) {
-            scorePlayer2++;
-            return true;
-        }
-
-        // nobody scored
-        return false;
-    };
-
-    /**
-     * checks if ball colides with given player bat
-     * @param playerBat
-     * @returns {boolean}
-     */
-    var checkBallCollision = function(playerBat) {
-
-        // bat coordinates
-        var batInfo = {
-            centerX: playerBat.x,
-            centerY: playerBat.y,
-            smallestX: playerBat.x - (batWidth / 2),
-            biggestX: playerBat.x + (batWidth / 2),
-            smallestY: playerBat.y - (batHeight / 2),
-            biggestY: playerBat.y + (batHeight / 2)
+    var resetGameObjects = function() {
+        Player1Bat = {
+            x: batBorderSpacing + (batWidth / 2),
+            y: canvasHeight / 2
+        };
+        Player2Bat = {
+            x: canvasWidth - batBorderSpacing - (batWidth / 2),
+            y: canvasHeight / 2
+        };
+        Ball = {
+            x: canvasWidth / 2,
+            y: canvasHeight / 2
         };
 
-        // ball coordinates
-        var ballInfo = {
-            centerX: Ball.x,
-            centerY: Ball.y,
-            smallestX: Ball.x - ballRadius,
-            biggestX: Ball.x + ballRadius,
-            smallestY: Ball.y - ballRadius,
-            biggestY: Ball.y + ballRadius
+        // sets a random ball direction
+        BallVelocity = {
+            x: gameSpeed * (Math.random() > 0.5 ? 1 : -1),
+            y: gameSpeed * (Math.random() > 0.5 ? 1 : -1)
         };
-
-        // check if they would collide on the x axis
-        if (
-            (batInfo.smallestX <= ballInfo.smallestX && ballInfo.smallestX <= batInfo.biggestX) ||
-            (batInfo.smallestX <= ballInfo.biggestX && ballInfo.biggestX <= batInfo.biggestX)
-        ) {
-            // check if the are colliding on the y axis too
-            if (
-                (batInfo.smallestY <= ballInfo.smallestY && ballInfo.smallestY <= batInfo.biggestY) ||
-                (batInfo.smallestY <= ballInfo.biggestY && ballInfo.biggestY <= batInfo.biggestY)
-            ) {
-                return true;
-            }
-        }
-
-        // the ball didn't collide with the given bat
-        return false;
     };
 
     /**
-     * (re)creates the ball game object and generates a random velocity for it
+     * Clears all drawings on the canvas
      */
-    var resetGameObjects = function(){
-
-        // initialize the player bats
-        Player1Bat = new GameObject(
-            batBorderSpacing + (batWidth / 2),
-            canvasHeight / 2
-        );
-
-        Player2Bat = new GameObject(
-            canvasWidth - batBorderSpacing - (batWidth / 2),
-            canvasHeight / 2
-        );
-
-        // create ball object
-        Ball = new GameObject(
-            canvasWidth / 2,
-            canvasHeight / 2
-        );
-
-        // start moving the ball, but we have to determine in which direction
-        // which is done randomly
-        if (Math.random() > 0.5) {
-            BallVelocity = new Vector(gameSpeed * -1, 0);
-        } else {
-            BallVelocity = new Vector(gameSpeed, 0);
-        }
-
-        // we pause the script execution for the defined pause time
-        var startTime = new Date();
-        var currentTime = null;
-        do {
-            currentTime = new Date();
-        } while(currentTime - startTime < scorePauseTimer);
-    };
-
-    /**
-     * checks if bat can be moved up or down the Y axis, or if bat is already to close to the border
-     * @param bat
-     * @param distance
-     * @returns {boolean}
-     */
-    var canBatBeMovedOnYAxis = function(bat, distance) {
-
-        // are we to far too the top if we move the bat?
-        if ((bat.y - (batHeight / 2)) + distance <= 0) {
-            return false;
-        }
-
-        // are we too far to the bottom if we move the bat?
-        if ((bat.y + (batHeight / 2)) + distance >= canvasHeight) {
-            return false;
-        }
-
-        // everything is fine, bat can be moved
-        return true;
-    };
-
-    /**
-     * fills & updates keymap, saves if a certain key code is pressed as boolean
-     * @param event
-     */
-    var keyboardInputHandler = function(event) {
-        var char = String.fromCharCode(event.keyCode).toLowerCase();
-        keyboardInputEventMap[char] = (event.type == 'keydown');
-    };
-
-    /**
-     * eventhandler for keypress events of document which sets the player's io states
-     * @param event
-     */
-    var updateKeyboardIO = function(){
-
-        // if player1 moves the bat
-        if (keyboardInputEventMap[self.config.controls.Player1.up] || keyboardInputEventMap[self.config.controls.Player1.down]) {
-
-            // up
-            if (keyboardInputEventMap[self.config.controls.Player1.up]) {
-                self.keyboardIO.Player1Up = true;
-                self.keyboardIO.Player1Down = false;
-            }
-
-            // down
-            else if (keyboardInputEventMap[self.config.controls.Player1.down]) {
-                self.keyboardIO.Player1Up = false;
-                self.keyboardIO.Player1Down = true;
-            }
-        } else {
-
-            // player1 is not moving
-            self.keyboardIO.Player1Up = false;
-            self.keyboardIO.Player1Down = false;
-        }
-
-        // if player2 moves the bat (just enabled if multiplayer is active)
-        if ((keyboardInputEventMap[self.config.controls.Player2.up] || keyboardInputEventMap[self.config.controls.Player2.down]) && self.config.isMultiplayer) {
-
-            // up
-            if (keyboardInputEventMap[self.config.controls.Player2.up]) {
-                self.keyboardIO.Player2Up = true;
-                self.keyboardIO.Player2Down = false;
-            }
-
-            // down
-            else if (keyboardInputEventMap[self.config.controls.Player2.down]) {
-                self.keyboardIO.Player2Up = false;
-                self.keyboardIO.Player2Down = true;
-            }
-        } else {
-
-            // player1 is not moving
-            self.keyboardIO.Player2Up = false;
-            self.keyboardIO.Player2Down = false;
-        }
-    };
-
-    /**
-     * clears all drawings from the canvas
-     */
-    var drawClear = function(){
+    var drawClear = function() {
         canvasContext.fillStyle = self.config.colors.background;
-        canvasContext.clearRect(
-            0,
-            0,
-            canvasWidth,
-            canvasHeight
-        );
-
-        // apply background color
-        gameCanvas.style.backgroundColor = self.config.colors.background;
+        canvasContext.fillRect(0, 0, canvasWidth, canvasHeight);
     };
 
     /**
-     * clears the whole canvas and
-     * @param FatText
-     * @param SmallerText
+     * Draws the current state of the game
      */
-    var drawCenteredText = function(FatText, SmallerText) {
-
-        // clear all drawings from the canvas
-        drawClear();
-
-        // draw the message
-        canvasContext.fillStyle = self.config.colors.scores;
-        canvasContext.font = 'bold ' + centeredMessageFontSize + 'px Courier New';
-        canvasContext.fillText(
-            FatText,
-            (canvasWidth / 2) - (canvasContext.measureText(FatText).width / 2),
-            (canvasHeight / 2) - (centeredMessageFontSize / 2)
-        );
-
-        // draw smaller text if available
-        if (SmallerText) {
-            canvasContext.font = 'bold ' + scoreFontSize + 'px Courier New';
-            canvasContext.fillText(
-                SmallerText,
-                (canvasWidth / 2) - (canvasContext.measureText(SmallerText).width / 2),
-                (canvasHeight / 2) + (centeredMessageFontSize / 2)
-            );
-        }
-    };
-
-    /**
-     * draws all game objects onto the canvas
-     */
-    var drawGame = function(){
+    var drawGame = function() {
 
         // clear all drawings from the canvas
         drawClear();
@@ -550,7 +249,7 @@ var PongGame = function(gameCanvasNodeId){
             Ball.y,
             ballRadius,
             0,
-            2*Math.PI
+            2 * Math.PI
         );
         canvasContext.fill();
 
@@ -571,76 +270,225 @@ var PongGame = function(gameCanvasNodeId){
             canvasWidth - canvasContext.measureText(self.config.names.Player2 + ' ' + scorePlayer2).width - batBorderSpacing,
             scoreFontSize
         );
-    };
 
-
-    /**
-     * minimalistic GameObject
-     * @param x
-     * @param y
-     * @constructor
-     */
-    var GameObject = function (x, y) {
-        var self = this;
-        this.x = x;
-        this.y = y;
-
-        /**
-         * moves the game object by the given vector
-         * @param vector
-         */
-        this.moveObject = function (vector) {
-            self.x += vector.x;
-            self.y += vector.y;
-        };
-    };
-
-
-    /**
-     * Vector object shell
-     * @param x
-     * @param y
-     * @constructor
-     */
-    var Vector = function(x, y) {
-        var self = this;
-        this.x = x;
-        this.y = y;
-    };
-
-    /**
-     * returns all values of an array like javascript object (array or object)
-     * @param arrayLikeObject
-     * @returns {Array}
-     */
-    Array.arrayValues = function(arrayLikeObject){
-        if (typeof arrayLikeObject !== 'object') {
-            throw new Error('Given arrayLikeObject is not array like!');
+        // draw the remaining time if timed mode is enabled
+        if (self.config.isTimedMode) {
+            canvasContext.fillText(
+                'Time: ' + remainingTime,
+                (canvasWidth / 2) - (canvasContext.measureText('Time: ' + remainingTime).width / 2),
+                scoreFontSize
+            );
         }
-        var values = [];
-        for(key in arrayLikeObject) {
-            values.push(arrayLikeObject[key]);
-        }
-        return values;
     };
 
     /**
-     * nice method to deep extend JS objects. found here:
-     * http://andrewdupont.net/2009/08/28/deep-extending-objects-in-javascript/
-     * @param destination
-     * @param source
-     * @returns {*}
+     * Draws a centered title and a message
      */
-    Object.deepExtend = function(destination, source) {
-        for (var property in source) {
-            if (source[property] && source[property].constructor &&
-                source[property].constructor === Object) {
-                destination[property] = destination[property] || {};
-                arguments.callee(destination[property], source[property]);
+    var drawCenteredText = function(title, message) {
+        // clear all drawings from the canvas
+        drawClear();
+
+        // draw title
+        canvasContext.fillStyle = self.config.colors.scores;
+        canvasContext.font = 'bold ' + centeredMessageFontSize + 'px Courier New';
+        canvasContext.fillText(
+            title,
+            (canvasWidth / 2) - (canvasContext.measureText(title).width / 2),
+            (canvasHeight / 2) - centeredMessageFontSize
+        );
+
+        // draw message
+        canvasContext.fillStyle = self.config.colors.bat;
+        canvasContext.font = 'bold ' + scoreFontSize + 'px Courier New';
+        canvasContext.fillText(
+            message,
+            (canvasWidth / 2) - (canvasContext.measureText(message).width / 2),
+            (canvasHeight / 2)
+        );
+    };
+
+    /**
+     * Start the game loop and keeps track of the game state
+     */
+    var runGame = function() {
+        if (gameStopped) return;
+
+        moveBall();
+        if (self.config.isMultiplayer) {
+            moveBat(Player1Bat, self.keyboardIO.Player1Up, self.keyboardIO.Player1Down);
+            moveBat(Player2Bat, self.keyboardIO.Player2Up, self.keyboardIO.Player2Down);
+        } else {
+            moveBat(Player1Bat, self.keyboardIO.Player1Up, self.keyboardIO.Player1Down);
+            moveAIBat(Player2Bat);
+        }
+
+        drawGame();
+        setTimeout(runGame, drawRate);
+    };
+
+    /**
+     * Moves the AI's bat towards the ball
+     * @param bat
+     */
+    var moveAIBat = function(bat) {
+        var reactionSpeed = self.config.difficulty;
+
+        // ball is moving towards the bat
+        if (BallVelocity.x > 0) {
+            if (Ball.y > bat.y) {
+                bat.y += gameSpeed * reactionSpeed;
             } else {
-                destination[property] = source[property];
+                bat.y -= gameSpeed * reactionSpeed;
             }
         }
-        return destination;
+
+        // ball is moving away from the bat
+        if (BallVelocity.x < 0) {
+            if (bat.y > canvasHeight / 2) {
+                bat.y -= gameSpeed * reactionSpeed;
+            } else {
+                bat.y += gameSpeed * reactionSpeed;
+            }
+        }
+
+        // bat is out of bounds
+        if (bat.y < batHeight / 2) {
+            bat.y = batHeight / 2;
+        }
+        if (bat.y > canvasHeight - (batHeight / 2)) {
+            bat.y = canvasHeight - (batHeight / 2);
+        }
+    };
+
+    /**
+     * Moves the player's bat up and down
+     * @param bat
+     * @param isMoveUp
+     * @param isMoveDown
+     */
+    var moveBat = function(bat, isMoveUp, isMoveDown) {
+        if (isMoveUp) {
+            bat.y -= gameSpeed;
+        } else if (isMoveDown) {
+            bat.y += gameSpeed;
+        }
+
+        // bat is out of bounds
+        if (bat.y < batHeight / 2) {
+            bat.y = batHeight / 2;
+        }
+        if (bat.y > canvasHeight - (batHeight / 2)) {
+            bat.y = canvasHeight - (batHeight / 2);
+        }
+    };
+
+    /**
+     * Moves the ball on the canvas
+     */
+    var moveBall = function() {
+
+        // check ball collision with bats
+        var bats = [Player1Bat, Player2Bat];
+        for (var bat in bats) {
+            if (isBallTouching(bats[bat])) {
+
+                // calculate distance between ball and bat
+                var diffY = Ball.y - bats[bat].y;
+                BallVelocity.y = BallVelocity.y + diffY * gameBounceSmoothness;
+
+                // ball hit left bat
+                if (bat == 0) {
+                    BallVelocity.x = -BallVelocity.x + gameSpeed * gameBounceSpeedRatio;
+                    Ball.x = bats[bat].x + batWidth / 2 + ballRadius;
+                }
+
+                // ball hit right bat
+                if (bat == 1) {
+                    BallVelocity.x = -BallVelocity.x - gameSpeed * gameBounceSpeedRatio;
+                    Ball.x = bats[bat].x - batWidth / 2 - ballRadius;
+                }
+            }
+        }
+
+        // check ball collision with canvas top and bottom
+        if (Ball.y < ballRadius || Ball.y > canvasHeight - ballRadius) {
+            BallVelocity.y = -BallVelocity.y;
+        }
+
+        // check if a player scored
+        if (Ball.x < ballRadius) {
+            scorePlayer2++;
+            resetGameObjects();
+        }
+        if (Ball.x > canvasWidth - ballRadius) {
+            scorePlayer1++;
+            resetGameObjects();
+        }
+
+        // move ball
+        Ball.x += BallVelocity.x;
+        Ball.y += BallVelocity.y;
+
+        // check if a player won
+        if (scorePlayer1 == self.config.finalScore) {
+            self.pause();
+            drawCenteredText(
+                'Game Over',
+                self.config.names.Player1 + ' wins!'
+            );
+        }
+        if (scorePlayer2 == self.config.finalScore) {
+            self.pause();
+            drawCenteredText(
+                'Game Over',
+                self.config.names.Player2 + ' wins!'
+            );
+        }
+
+        // handle time limit if timed mode is enabled
+        if (self.config.isTimedMode) {
+            remainingTime--;
+            if (remainingTime == 0) {
+                self.pause();
+                if (scorePlayer1 > scorePlayer2) {
+                    drawCenteredText(
+                        'Game Over',
+                        self.config.names.Player1 + ' wins!'
+                    );
+                } else if (scorePlayer1 < scorePlayer2) {
+                    drawCenteredText(
+                        'Game Over',
+                        self.config.names.Player2 + ' wins!'
+                    );
+                } else {
+                    drawCenteredText(
+                        'Game Over',
+                        'It\'s a draw!'
+                    );
+                }
+            }
+        }
+    };
+
+    /**
+     * Check if the ball is touching the bat
+     * @param bat
+     * @returns {boolean}
+     */
+    var isBallTouching = function(bat) {
+        var ballBottom = Ball.y + ballRadius;
+        var ballTop = Ball.y - ballRadius;
+        var ballLeft = Ball.x - ballRadius;
+        var ballRight = Ball.x + ballRadius;
+
+        var batTop = bat.y - batHeight / 2;
+        var batBottom = bat.y + batHeight / 2;
+        var batLeft = bat.x - batWidth / 2;
+        var batRight = bat.x + batWidth / 2;
+
+        return ballBottom >= batTop &&
+            ballTop <= batBottom &&
+            ballLeft <= batRight &&
+            ballRight >= batLeft;
     };
 };
