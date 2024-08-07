@@ -67,6 +67,10 @@
                 <button class="applyTheme btn btn-default" onclick="applyTheme('blackWhite');">Black and White</button>
                 <h3>Difficulty</h3>
                 <label class="radio-inline">
+                    <input type="radio" name="difficulty" onclick="changeDifficulty(this);" data-difficulty="amateur">
+                    Amateur
+                </label>
+                <label class="radio-inline">
                     <input type="radio" name="difficulty" onclick="changeDifficulty(this);" data-difficulty="easy" checked="checked">
                     Easy
                 </label>
@@ -77,6 +81,10 @@
                 <label class="radio-inline">
                     <input type="radio" name="difficulty" onclick="changeDifficulty(this);" data-difficulty="hard">
                     Hard
+                </label>
+                <label class="radio-inline">
+                    <input type="radio" name="difficulty" onclick="changeDifficulty(this);" data-difficulty="veryhard">
+                    Very Hard
                 </label>
             </div>
         </div>
