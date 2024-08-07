@@ -1,5 +1,5 @@
 # HTML5 Pong
-100% credit to SMenigat on this. I just added some themes and a timer :) Great project
+100% credit to SMenigat on this. I am just experimenting with adding some new features (this project is not currently working, as it is unfinished) Great project!
 Pong game written in vanilla JavaScript, utilising HTML5 Canvas. 
 
 You want to play and try it out? [Here you go!](https://rawgit.com/SMenigat/html5-pong/master/pong-demo.html)
