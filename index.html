@@ -86,86 +86,8 @@
         </div>
         <hr />
     </div>
-    <script>
-        // initialize the game
-        var Game = new PongGame('gameCanvas');
-        Game.run({
-            difficulty: PongGame.aiDifficulty.easy,
-            names: {
-                Player1: 'PongPlayer'
-            }
-        });
-
-        /**
-         * applies a theme to the running pong game & redraws the canvas to make the change visable
-         * @param themeName
-         */
-        function applyTheme(themeName) {
-
-            // collection of all click-able themes
-            var allThemes = {
-                standard: {
-                    background: 'black',
-                    bat: 'green',
-                    ball: 'white',
-                    scores: 'red'
-                },
-                classic: {
-                    background: 'black',
-                    bat: 'green',
-                    ball: 'green',
-                    scores: 'gray'
-                },
-                lego: {
-                    background: 'blue',
-                    bat: 'yellow',
-                    ball: 'red',
-                    scores: 'white'
-                },
-                blackWhite: {
-                    background: 'white',
-                    bat: 'black',
-                    ball: 'black',
-                    scores: 'gray'
-                }
-            };
-
-            // apply new color config
-            Game.setConfiguration({
-                colors: allThemes[themeName]
-            });
-
-            // manually redraw
-            Game.resume();
-            Game.pause();
-        }
-
-        /**
-         * change event for multiplayer toggle checkbox
-         * @param checkbox
-         */
-        function toggleMultiplayer(checkbox) {
-            Game.setMultiplayer(checkbox.checked);
-
-            // we have to rename pongbot if this is a real player now
-            if(checkbox.checked) {
-                Game.setConfiguration({
-                    names: {
-                        Player2: 'AnotherPongPlayer'
-                    }
-                });
-            }
-        }
-
-        /**
-         * change event for game difficulty
-         * @param radio
-         */
-        function changeDifficulty(radio) {
-            Game.setDifficulty(
-                PongGame.aiDifficulty[radio.getAttribute('data-difficulty')]
-            );
-        }
+    <script src="pong.js">
     </script>
+    
 </body>
 </html>
