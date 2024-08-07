@@ -3,20 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <title>HTML5 Pong Demo</title>
-
-    <!-- Demo site CSS, not needed for PongGame library -->
     <link rel="stylesheet" href="pong-demo.css">
-
-    <!-- Bootstrap: Latest compiled and minified CSS -->
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
-
-    <!-- jQuery: Latest compiled and minified JavaScript (Bootstrap needs it, not PongGame) -->
     <script src="https://code.jquery.com/jquery-2.2.0.min.js"></script>
-
-    <!-- Bootstrap: Latest compiled and minified JavaScript -->
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
-
-    <!-- PongGame: JavaScript library -->
     <script src="pong.js" type="application/javascript"></script>
 </head>
 <body>
@@ -30,18 +20,20 @@
         <div class="row">
             <div class="col-md-8">
                 <div id="canvasWrapper">
-                    <canvas id="gameCanvas" tabindex="1"></canvas>
+                    <div>
+                        <canvas id="gameCanvas" tabindex="1"></canvas>
+                    </div>
                 </div>
             </div>
             <div class="col-md-4" id="optionWrapper">
                 <h3>Controls Player1</h3>
                 <div class="input-group">
                     <div class="input-group-addon">Bat Up</div>
-                    <input type="text" value="ArrowUp" class="form-control" disabled="disabled">
+                    <input type="text" value="W" class="form-control" disabled="disabled">
                 </div>
                 <div class="input-group">
                     <div class="input-group-addon">Bat Down</div>
-                    <input type="text" value="ArrowDown" class="form-control" disabled="disabled">
+                    <input type="text" value="S" class="form-control" disabled="disabled">
                 </div>
                 <h3>Controls Player2</h3>
                 <div class="checkbox">
@@ -49,18 +41,14 @@
                         <input type="checkbox" onchange="toggleMultiplayer(this);" value="0">
                         Enable Multiplayer (activates Player2)
                     </label>
-                    <label>
-                        <input type="checkbox" onchange="toggleTimed(this);" value="0">
-                        Enable Timed Game (2 minutes)
-                    </label>
                 </div>
                 <div class="input-group">
                     <div class="input-group-addon">Bat Up</div>
-                    <input type="text" value="w" class="form-control" disabled="disabled">
+                    <input type="text" value="O" class="form-control" disabled="disabled">
                 </div>
                 <div class="input-group">
                     <div class="input-group-addon">Bat Down</div>
-                    <input type="text" value="s" class="form-control" disabled="disabled">
+                    <input type="text" value="L" class="form-control" disabled="disabled">
                 </div>
                 <h3>Themes</h3>
                 <button class="applyTheme btn btn-default" onclick="applyTheme('standard');">Standard Theme</button>
@@ -80,83 +68,97 @@
                     <input type="radio" name="difficulty" onclick="changeDifficulty(this);" data-difficulty="hard">
                     Hard
                 </label>
+                <h3>Timer</h3>
+                <div class="input-group">
+                    <div class="input-group-addon">Minutes</div>
+                    <input type="number" id="timerMinutes" class="form-control" value="5" min="1">
+                </div>
+                <h3>Game Timer</h3>
+                <div id="timerDisplay">05:00</div>
             </div>
         </div>
         <hr />
     </div>
-
     <script>
+        // initialize the game
+        var Game = new PongGame('gameCanvas');
+        Game.run({
+            difficulty: PongGame.aiDifficulty.easy,
+            names: {
+                Player1: 'PongPlayer'
+            },
+            timer: document.getElementById('timerMinutes').value * 60 // convert minutes to seconds
+        });
+
+        /**
+         * applies a theme to the running pong game & redraws the canvas to make the change visible
+         * @param themeName
+         */
+        function applyTheme(themeName) {
+            // collection of all click-able themes
+            var allThemes = {
+                standard: {
+                    background: 'black',
+                    bat: 'green',
+                    ball: 'white',
+                    scores: 'red'
+                },
+                classic: {
+                    background: 'black',
+                    bat: 'green',
+                    ball: 'green',
+                    scores: 'gray'
+                },
+                lego: {
+                    background: 'blue',
+                    bat: 'yellow',
+                    ball: 'red',
+                    scores: 'white'
+                },
+                blackWhite: {
+                    background: 'white',
+                    bat: 'black',
+                    ball: 'black',
+                    scores: 'gray'
+                }
+            };
+
+            // apply new color config
+            Game.setConfiguration({
+                colors: allThemes[themeName]
+            });
+
+            // manually redraw
+            Game.resume();
+            Game.pause();
+        }
+
+        /**
+         * change event for multiplayer toggle checkbox
+         * @param checkbox
+         */
         function toggleMultiplayer(checkbox) {
-            pongGame.setConfiguration({ isMultiplayer: checkbox.checked });
-        }
+            Game.setMultiplayer(checkbox.checked);
 
-        function toggleTimed(checkbox) {
-            pongGame.setConfiguration({ isTimedMode: checkbox.checked, timeDuration: 120 });
-        }
-
-        function applyTheme(theme) {
-            switch(theme) {
-                case 'standard':
-                    pongGame.setConfiguration({
-                        colors: {
-                            background: '#000',
-                            bat: '#FFF',
-                            ball: '#FFF',
-                            scores: '#FFF'
-                        }
-                    });
-                    break;
-                case 'classic':
-                    pongGame.setConfiguration({
-                        colors: {
-                            background: '#000',
-                            bat: '#FFF',
-                            ball: '#FFF',
-                            scores: '#FFF'
-                        }
-                    });
-                    break;
-                case 'lego':
-                    pongGame.setConfiguration({
-                        colors: {
-                            background: '#FFF',
-                            bat: '#000',
-                            ball: '#000',
-                            scores: '#000'
-                        }
-                    });
-                    break;
-                case 'blackWhite':
-                    pongGame.setConfiguration({
-                        colors: {
-                            background: '#FFF',
-                            bat: '#000',
-                            ball: '#000',
-                            scores: '#000'
-                        }
-                    });
-                    break;
+            // we have to rename pongbot if this is a real player now
+            if(checkbox.checked) {
+                Game.setConfiguration({
+                    names: {
+                        Player2: 'AnotherPongPlayer'
+                    }
+                });
             }
         }
 
+        /**
+         * change event for game difficulty
+         * @param radio
+         */
         function changeDifficulty(radio) {
-            switch(radio.getAttribute('data-difficulty')) {
-                case 'easy':
-                    pongGame.setConfiguration({ difficulty: 0.1 });
-                    break;
-                case 'normal':
-                    pongGame.setConfiguration({ difficulty: 0.2 });
-                    break;
-                case 'hard':
-                    pongGame.setConfiguration({ difficulty: 0.3 });
-                    break;
-            }
+            Game.setDifficulty(
+                PongGame.aiDifficulty[radio.getAttribute('data-difficulty')]
+            );
         }
-
-        window.onload = function() {
-            pongGame = new Pong('gameCanvas');
-            pongGame.start();
-        };
     </script>
 </body>
 </html>
