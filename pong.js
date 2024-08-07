@@ -187,4 +187,3 @@ window.onload = function() {
     var pongGame = new Pong('gameCanvas');
     pongGame.start();
 };
-
