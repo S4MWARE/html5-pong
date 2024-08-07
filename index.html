@@ -11,12 +11,12 @@
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
 
     <!-- jQuery: Latest compiled and minified JavaScript (Bootstrap needs it, not PongGame) -->
-    <script src="https://code.jquery.com/jquery-2.2.0.min.js" ></script>
+    <script src="https://code.jquery.com/jquery-2.2.0.min.js"></script>
 
     <!-- Bootstrap: Latest compiled and minified JavaScript -->
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
 
-    <!-- PongGame: Latest JavaScript library -->
+    <!-- PongGame: JavaScript library -->
     <script src="pong.js" type="application/javascript"></script>
 </head>
 <body>
@@ -37,11 +37,11 @@
                 <h3>Controls Player1</h3>
                 <div class="input-group">
                     <div class="input-group-addon">Bat Up</div>
-                    <input type="text" value="W" class="form-control" disabled="disabled">
+                    <input type="text" value="ArrowUp" class="form-control" disabled="disabled">
                 </div>
                 <div class="input-group">
                     <div class="input-group-addon">Bat Down</div>
-                    <input type="text" value="S" class="form-control" disabled="disabled">
+                    <input type="text" value="ArrowDown" class="form-control" disabled="disabled">
                 </div>
                 <h3>Controls Player2</h3>
                 <div class="checkbox">
@@ -56,11 +56,11 @@
                 </div>
                 <div class="input-group">
                     <div class="input-group-addon">Bat Up</div>
-                    <input type="text" value="O" class="form-control" disabled="disabled">
+                    <input type="text" value="w" class="form-control" disabled="disabled">
                 </div>
                 <div class="input-group">
                     <div class="input-group-addon">Bat Down</div>
-                    <input type="text" value="L" class="form-control" disabled="disabled">
+                    <input type="text" value="s" class="form-control" disabled="disabled">
                 </div>
                 <h3>Themes</h3>
                 <button class="applyTheme btn btn-default" onclick="applyTheme('standard');">Standard Theme</button>
@@ -86,11 +86,6 @@
     </div>
 
     <script>
-        window.onload = function() {
-            var pongGame = new Pong('gameCanvas');
-            pongGame.start();
-        };
-
         function toggleMultiplayer(checkbox) {
             pongGame.setConfiguration({ isMultiplayer: checkbox.checked });
         }
@@ -157,6 +152,11 @@
                     break;
             }
         }
+
+        window.onload = function() {
+            pongGame = new Pong('gameCanvas');
+            pongGame.start();
+        };
     </script>
 </body>
 </html>
