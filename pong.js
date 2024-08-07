@@ -5,9 +5,16 @@
  * @param self.config.names.Player2
  * @constructor
  */
-var PongGame = function(gameCanvasNodeId){
+document.addEventListener('DOMContentLoaded', function() {
+    // Retrieve and store input values
+    var player1UpKey = document.getElementById('p1.1').value;
+    var player1DownKey = document.getElementById('p1.2').value;
+    var player2UpKey = document.getElementById('p2.1').value;
+    var player2DownKey = document.getElementById('p2.2').value;
+    var finalScore = document.getElementById('points').value;
+}
+    var PongGame = function(gameCanvasNodeId){
     var self = this;
-
     // difficulty enumeration
     PongGame.aiDifficulty = {
         amateur: 0.3,
@@ -33,15 +40,15 @@ var PongGame = function(gameCanvasNodeId){
             scores: 'red'
         },
         controls: {
-            Player1: {
-                up: 'w',
-                down: 's'
+             Player1: {
+                up: player1UpKey,
+                down: player1DownKey
             },
             Player2: {
-                up: 'o',
-                down: 'l'
+                up: player2UpKey,
+                down: player2DownKey
             }
-        }
+        },
     };
 
     // game performance settings & timings
