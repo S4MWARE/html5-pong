@@ -69,6 +69,7 @@
                 <button class="applyTheme btn btn-default" onclick="applyTheme('classic');">Classic Pong</button>
                 <button class="applyTheme btn btn-default" onclick="applyTheme('lego');">Lego Pong</button>
                 <button class="applyTheme btn btn-default" onclick="applyTheme('blackWhite');">Black and White</button>
+                <button class="applyTheme btn btn-default" onclick="applyTheme('pastel');">Pastel</button>
                 <h3>Difficulty</h3>
                 <label class="radio-inline">
                     <input type="radio" name="difficulty" onclick="changeDifficulty(this);" data-difficulty="amateur">
@@ -134,6 +135,12 @@
                     background: 'white',
                     bat: 'black',
                     ball: 'black',
+                    scores: 'gray'
+                },
+                pastel: {
+                    background: 'white',
+                    bat: '#aaffff',
+                    ball: '#ffff99',
                     scores: 'gray'
                 }
             };
