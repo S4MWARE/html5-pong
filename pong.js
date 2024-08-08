@@ -164,7 +164,7 @@ var PongGame = function(gameCanvasNodeId){
         self.config.isMultiplayer = multiplayer;
     };
     this.setPoints = function(points) {
-        self.config.points = points;
+        self.config.finalScore = points;
     };
 
     /**
