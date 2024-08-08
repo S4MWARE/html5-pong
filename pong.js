@@ -163,6 +163,9 @@ var PongGame = function(gameCanvasNodeId){
     this.setMultiplayer = function(multiplayer) {
         self.config.isMultiplayer = multiplayer;
     };
+    this.setPoints = function(points) {
+        self.config.points = points;
+    };
 
     /**
      * sets difficulty for singleplayer game. if value not in aiDifficulty enum, difficulty is set to normal.
