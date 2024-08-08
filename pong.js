@@ -10,9 +10,11 @@ var PongGame = function(gameCanvasNodeId){
 
     // difficulty enumeration
     PongGame.aiDifficulty = {
+        amateur: 0.3,
         easy: 0.6,
         normal: 0.8,
-        hard: 1.0
+        hard: 1.0,
+        veryhard: 2.0,
     };
 
     // configuration editable by user
