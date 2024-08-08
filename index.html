@@ -39,11 +39,11 @@
                 <h3>Controls Player1</h3>
                 <div class="input-group">
                     <div class="input-group-addon">Bat Up</div>
-                    <input type="text" id="p1.1" value="W" class="form-control">
+                    <input type="text" id="p1.1" value="W" disabled="disabled" class="form-control">
                 </div>
                 <div class="input-group">
                     <div class="input-group-addon">Bat Down</div>
-                    <input type="text" id="p1.2" value="S" class="form-control">
+                    <input type="text" id="p1.2" value="S" disabled="disabled" class="form-control">
                 </div>
                 <h3>Controls Player2</h3>
                 <div class="checkbox">
@@ -54,15 +54,15 @@
                 </div>
                 <div class="input-group">
                     <div class="input-group-addon">Bat Up</div>
-                    <input type="text" value="O" id="p2.1" class="form-control">
+                    <input type="text" value="O" disabled="disabled" id="p2.1" class="form-control">
                 </div>
                 <div class="input-group">
                     <div class="input-group-addon">Bat Down</div>
-                    <input type="text" value="L" id="p2.2" class="form-control">
+                    <input type="text" value="L" disabled="disabled" id="p2.2" class="form-control">
                 </div>
                   <div class="input-group">
                     <div class="input-group-addon">Points</div>
-                    <input type="number" value="5" id="points" class="form-control">
+                    <input type="number" value="5" id="points" onchange="togglePoints(this);" class="form-control">
                 </div>
                 <h3>Themes</h3>
                 <button class="applyTheme btn btn-default" onclick="applyTheme('standard');">Standard Theme</button>
