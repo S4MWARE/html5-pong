@@ -1,30 +1,59 @@
 body {
     background-color: #f8f8f8;
-    font-family: Arial, sans-serif;
 }
 
-.page-header {
-    text-align: center;
-    margin-top: 20px;
+#backButton {
+    margin-top: -5px;
 }
 
-#canvasWrapper {
-    text-align: center;
+#canvasWrapper{
+    position: relative;
+    width: 100%;
+    margin-bottom: 20px;
+}
+#canvasWrapper:before{
+    content: "";
+    display: block;
+    padding-top: 75%;
+}
+
+#canvasWrapper div {
+    display: block;
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
 }
 
 #gameCanvas {
-    border: 1px solid #000;
-}
-
-#optionWrapper {
-    margin-top: 20px;
-}
-
-.input-group {
-    margin-bottom: 10px;
-}
-
-.applyTheme {
-    margin-bottom: 10px;
+    height: 100%;
     width: 100%;
+}
+
+button.applyTheme {
+    display: block;
+    margin-bottom: 5px;
+    width: 100%;
+}
+
+#optionWrapper h3 {
+    margin-top: 25px;
+}
+
+#optionWrapper h3:first-child {
+    margin-top: 0;
+}
+
+#optionWrapper .input-group {
+    width: 100%;
+    margin-bottom: 5px;
+}
+
+#optionWrapper .input-group input {
+    background-color: white;
+}
+
+#optionWrapper .input-group .input-group-addon {
+    width: 100px;
 }
