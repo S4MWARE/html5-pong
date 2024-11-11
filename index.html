@@ -39,11 +39,11 @@
                 <h3>Controls Player1</h3>
                 <div class="input-group">
                     <div class="input-group-addon">Bat Up</div>
-                    <input type="text" value="W" class="form-control" disabled="disabled">
+                    <input type="text" id="p1.1" value="W" disabled="disabled" class="form-control">
                 </div>
                 <div class="input-group">
                     <div class="input-group-addon">Bat Down</div>
-                    <input type="text" value="S" class="form-control" disabled="disabled">
+                    <input type="text" id="p1.2" value="S" disabled="disabled" class="form-control">
                 </div>
                 <h3>Controls Player2</h3>
                 <div class="checkbox">
@@ -54,18 +54,27 @@
                 </div>
                 <div class="input-group">
                     <div class="input-group-addon">Bat Up</div>
-                    <input type="text" value="O" class="form-control" disabled="disabled">
+                    <input type="text" value="O" disabled="disabled" id="p2.1" class="form-control">
                 </div>
                 <div class="input-group">
                     <div class="input-group-addon">Bat Down</div>
-                    <input type="text" value="L" class="form-control" disabled="disabled">
+                    <input type="text" value="L" disabled="disabled" id="p2.2" class="form-control">
+                </div>
+                  <div class="input-group">
+                    <div class="input-group-addon">Points</div>
+                    <input type="number" value="5" id="points" onchange="togglePoints(this);" class="form-control">
                 </div>
                 <h3>Themes</h3>
                 <button class="applyTheme btn btn-default" onclick="applyTheme('standard');">Standard Theme</button>
                 <button class="applyTheme btn btn-default" onclick="applyTheme('classic');">Classic Pong</button>
                 <button class="applyTheme btn btn-default" onclick="applyTheme('lego');">Lego Pong</button>
                 <button class="applyTheme btn btn-default" onclick="applyTheme('blackWhite');">Black and White</button>
+                <button class="applyTheme btn btn-default" onclick="applyTheme('pastel');">Pastel</button>
                 <h3>Difficulty</h3>
+                <label class="radio-inline">
+                    <input type="radio" name="difficulty" onclick="changeDifficulty(this);" data-difficulty="amateur">
+                    Amateur
+                </label>
                 <label class="radio-inline">
                     <input type="radio" name="difficulty" onclick="changeDifficulty(this);" data-difficulty="easy" checked="checked">
                     Easy
@@ -77,6 +86,10 @@
                 <label class="radio-inline">
                     <input type="radio" name="difficulty" onclick="changeDifficulty(this);" data-difficulty="hard">
                     Hard
+                </label>
+                <label class="radio-inline">
+                    <input type="radio" name="difficulty" onclick="changeDifficulty(this);" data-difficulty="veryhard">
+                    Very Hard
                 </label>
             </div>
         </div>
@@ -123,6 +136,12 @@
                     bat: 'black',
                     ball: 'black',
                     scores: 'gray'
+                },
+                pastel: {
+                    background: 'white',
+                    bat: '#aaffff',
+                    ball: '#ffff99',
+                    scores: 'gray'
                 }
             };
 
@@ -151,6 +170,10 @@
                     }
                 });
             }
+        }
+               function toggleMultiplayer(points) {
+             var point = points;
+            Game.setPoints(point);
         }
 
         /**
